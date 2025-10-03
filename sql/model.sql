@@ -1,0 +1,1 @@
+-- Supprimer les tables si elles existent déjà
