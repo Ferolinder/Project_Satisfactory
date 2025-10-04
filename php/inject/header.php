@@ -11,6 +11,9 @@
   <nav>
     <ul>
       <li><a href="index.php">Home</a></li>
-      <li><a href="profil.php">Profil</a></li>
+      <li><a href="mine.php">Mine</a></li>
+      <li><a href="energy.php">Energy</a></li>
+      <li><a href="currency.php">Currency</a></li>
+      <li><a href="carry.php">Carry</a></li>
     </ul>
   <body>
