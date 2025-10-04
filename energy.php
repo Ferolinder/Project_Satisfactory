@@ -12,7 +12,6 @@
     include_once('./php/inject/header.php');
 ?>
 
-    <h1>Welcome to Project Satisfactory</h1>
     <p>Energy page to view and edit energy consumption and production</p>
   </body>
 </html>

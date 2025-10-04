@@ -1,0 +1,42 @@
+-- Populating the item table with basic items
+INSERT INTO item (name_i, type_i, descr, qtt_w, qtt_u, qtt_p) VALUES 
+('Electricity',0,'Electrical energy',0,0,0),
+('Water',1,'Water ressource',0,0,0),
+('Raw_iron',1,'Unrefined iron ore',0,0,0),
+('Raw_copper',1,'Unrefined copper ore',0,0,0),
+('Raw_stone',1,'Unrefined stone ore',0,0,0),
+('Raw_quartz',1,'Unrefined quartz ore',0,0,0),
+('Raw_coal',1,'Unrefined coal ore',0,0,0),
+('Raw_caterium',1,'Unrefined caterium ore',0,0,0),
+('Raw_sulfure',1,'Unrefined sulfure ore',0,0,0),
+('Raw_petrol',1,'Unrefined petrol',0,0,0),
+('Iron_lingot',2,'Refined iron lingot',0,0,0),
+('Copper_lingot',2,'Refined_copper_lingot',0,0,0),
+('Steel_lingot',2,'Refnied_steel_lingot',0,0,0),
+('Caterium_lingot',2,'Refined caterium lingot',0,0,0),
+('Concrete',2,'Refnied stone',0,0,0),
+('Iron_rod',2,'Iron rod',0,0,0),
+('Screw',2,'Iron screw',0,0,0),
+('Iron_plates',2,'Iron plates',0,0,0),
+('Copper_wire',2,'Copper wire',0,0,0),
+('Cable',2,'Cable made of copper wire',0,0,0),
+('Reinforced_iron_plate',2,'Reinforced iron plate',0,0,0),
+('Rotor',2,'Rotor made of iron rod and screws',0,0,0),
+('Modular_frame',2,'Modular frame made of iron plates and iron rods',0,0,0),
+('Encased_industrial_beam',2,'Encased industrial beam made of steel lingots and concrete',0,0,0),
+('Caterium_wire',2,'Caterium wire made of caterium lingot',0,0,0),
+('Steel_pipe',2,'Steel pipe made of steel lingot',0,0,0),
+('Steel_beam',2,'Steel beam made of steel lingot',0,0,0);
+
+-- Populating the machine table  with basic machines
+INSERT INTO machine (name_m, conso, type_m, descr) VALUES
+('MinerMK1',5,1,'Basic miner'),
+('MinerMK2',15,1,'Improved miner'),
+('Smelter',4,2,'Basic smelting machine'),
+('Constructor',4,2,'Basic crafting machine'),
+('Assembler',15,2,'Advanced crafting machine'),
+('Water_extractor',20,1,'Extracts water from the ground'),
+('Oil_extractor',40,1,'Extracts crude oil from the ground'),
+('Refinery',30,2,'Refines crude oil into various products'),
+('Coal_generator',75,0,'Generates power from coal'),
+('Fuel_generator',250,0,'Generates power from fuel');
