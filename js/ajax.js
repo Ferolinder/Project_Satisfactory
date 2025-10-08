@@ -1,3 +1,7 @@
+console.log("ajax.js loaded");
+
+// Perform an AJAX request.
+
 function ajaxRequest(type, url, callback, data = null){
     // ajaxLoader(true);
     let xhr;
