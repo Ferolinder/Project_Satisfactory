@@ -1,1 +1,0 @@
-UPDATE item SET qtt_p = 60 WHERE id_i = 2;

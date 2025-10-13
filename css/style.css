@@ -3,7 +3,18 @@ span.close {
     cursor: pointer;
 }
 
+.modal.error{
+    background-color: #f44336; /* Red */
+    color: white;
+    margin-bottom: 15px;
+    padding: 16px;
+}
+
+.modal.success{
+    background-color: #4CAF50; /* Green */
+    color: white;
+    margin-bottom: 15px;
+    padding: 16px;
+}
+
 /* Body */
-/* body{
-    background-color: blueviolet;
-} */

@@ -1,153 +1,176 @@
--- Delete existing table to avoid conflicts
-DROP TABLE IF EXISTS item CASCADE;
-DROP TABLE IF EXISTS machine CASCADE;
-DROP TABLE IF EXISTS recipe CASCADE;
-DROP TABLE IF EXISTS production CASCADE;
-DROP TABLE IF EXISTS mine CASCADE;
+-- Deleting existing table if exists (drop child tables before parent tables)
+DROP TABLE IF EXISTS step           CASCADE;
+DROP TABLE IF EXISTS production     CASCADE;
+DROP TABLE IF EXISTS mine           CASCADE;
+DROP TABLE IF EXISTS recipe         CASCADE;
+DROP TABLE IF EXISTS machine_use    CASCADE;
+DROP TABLE IF EXISTS machine        CASCADE;
+DROP TABLE IF EXISTS item           CASCADE;
 
---Using caps lock for link to not confuse with the id of the table
-
--- Create item table 
----- All items in the game that can be crafted or mined
----- id_i      : unique identifier for each item     | PRIMARY KEY 
----- name_i     : Name of the item
----- type_i     : type of item (0=energy; 1=raw material; 2=intermediate or final product)
----- descr      : description of the item
----- qtt_w      : quantity that we want to produce per minute
----- qtt_p      : quantity produced per minute
----- qtt_u      : quantity used per minute
----- extraction_method : method used to extract the item (0=none; 1=miner; 2=water extractor; 3=oil extractor)
+-- Table item
+---- This table contain all the item data 
+-- -- id_i          : item uniq identifier      [PK]
+-- -- name_i        : item name
+-- -- type_i        : type of item (0=energy, 1=water, 2=petrol, 3=solid, 4=composit)
+-- -- primary_i     : boolean that say if it's a primary produce (like wood or raw iron)
+-- -- qtt_w         : quantity wanted by the user
+-- -- qtt_p         : quantity produced
+-- -- qtt_u         : quantity used
 CREATE TABLE item (
     id_i SERIAL PRIMARY KEY,
-    name_i VARCHAR(100) NOT NULL,
-    type_i INT NOT NULL,
-    descr TEXT,
-    qtt_w INT DEFAULT 0,
-    qtt_p INT DEFAULT 0,
-    qtt_u INT DEFAULT 0,
-    extraction_method INT DEFAULT 0
+    name_i TEXT NOT NULL,
+    type_i INTEGER NOT NULL,
+    primary_i BOOLEAN NOT NULL DEFAULT FALSE,
+    qtt_w FLOAT DEFAULT 0,
+    qtt_p FLOAT DEFAULT 0,
+    qtt_u FLOAT DEFAULT 0
 );
 
--- Create machine table
----- All machines in the game that can be built to craft items
----- id_ma      : unique identifier for each machine     | PRIMARY KEY
----- name_ma    : Name of the machine
----- conso      : energy consumption of the machine (in MW) (the type define if it's energy consumption or production)
----- type_ma    : type of machine (0=energy; 1=extracting; 2=crafting; 3=transporting)
----- descr      : description of the machine
----- exit_type  : type of exit of the machine (0=undefined; 1=solid; 2=fluid; 3=petrol)
----- natural_boost : natural boost provided by the machine (in %) (only for miners and extractors)
----- qtt        : give the quantity of factory
+-- Table machine
+-- -- This table contain all the machine data
+-- -- id_ma         : machine uniq identifier   [PK]
+-- -- name_ma       : machine name
+-- -- type_ma       : type of machine (0=energy_producer, 1=extractor, 2=fabricator, 3=other)
+-- -- output_type   : type of the item at the exit of the machine (0=energy, 1=water, 2=petrol, 3=solid, 4=composit)
+-- -- conso         : consumption of the machine (in MW)
 CREATE TABLE machine (
     id_ma SERIAL PRIMARY KEY,
-    name_ma VARCHAR(100) NOT NULL,
-    conso INT NOT NULL,
-    type_ma INT NOT NULL,
-    descr TEXT,
-    exit_type INT NOT NULL,
-    natural_boost INT DEFAULT 0,
-    qtt FLOAT
+    name_ma TEXT NOT NULL,
+    type_ma INTEGER NOT NULL,
+    output_type INTEGER NOT NULL,
+    natural_boost INTEGER NOT NULL,
+    conso REAL DEFAULT 0
 );
 
--- Create recipe table 
----- All recipe in the site that can be made by machines to craft items
----- id_r       : unique identifier for each recipe     | PRIMARY KEY
----- name_r     : Name of the recipe
----- id_m       : machine used to craft the recipe         | FOREIGN KEY
----- id_i_in    : item used as input for the recipe        | FOREIGN KEY
----- qtt_i_in   : quantity of item used as input for the recipe
----- id_i_out1  : item produced as output of the recipe     | FOREIGN KEY
----- qtt_i_out1 : quantity of item produced as output of the recipe
----- id_i_out2  : item produced as secondary output of the recipe | FOREIGN KEY
----- qtt_i_out2 : quantity of item produced as secondary output of the recipe
----- id_i_out3  : item produced as tertiary output of the recipe | FOREIGN KEY
----- qtt_i_out3 : quantity of item produced as tertiary output of the recipe
----- id_i_out4  : item produced as quaternary output of the recipe | FOREIGN KEY
----- qtt_i_out4 : quantity of item produced as quaternary output of the recipe
----- id_i_res1  : item produced as residue output of the recipe | FOREIGN KEY
----- qtt_i_res1 : quantity of item produced as residue output of the recipe
----- id_i_res2  : item produced as secondary residue output of the recipe | FOREIGN KEY
----- qtt_i_res2 : quantity of item produced as secondary residue output of the recipe
----- Type_r     : type of recipe (0=energy; 1=extraction; 2=crafting)
+-- Table recipe 
+-- -- This table contain all the recipe 
+-- -- id_r          : recipe uniq identifier                [PK]
+-- -- name_r        : recipe name
+-- -- favorite      : boolean indicator that say if it's the favorite recipe for this item
+-- -- id_ma_r       : machine id used for the recipe        [FK]
+-- -- id_i_S        : item id produced in exit              [FK]
+-- -- qtt_S         : quantity item exit
+-- -- id_i_R1       : item id residute                      [FK]
+-- -- qtt_R1        : quantity item residute
+-- -- id_i_R2       : item id residute                      [FK]
+-- -- qtt_R2        : quantity item residute
+-- -- id_i_E0       : item id in need (energy)              [FK]
+-- -- qtt_E0        : quantity item in need
+-- -- id_i_E1       : item id in need                       [FK]
+-- -- qtt_E1        : quantity item in need
+-- -- id_i_E2       : item id in need                       [FK]
+-- -- qtt_E2        : quantity item in need
+-- -- id_i_E3       : item id in need                       [FK]
+-- -- qtt_E3        : quantity item in need
+-- -- id_i_E4       : item id in need                       [FK]
+-- -- qtt_E4        : quantity item in need
 CREATE TABLE recipe (
     id_r SERIAL PRIMARY KEY,
-    name_r VARCHAR(100) NOT NULL,
-    id_MA INT,
-    id_I_out INT,
-    qtt_i_out FLOAT,
-    id_I_in1 INT,
-    qtt_i_in1 FLOAT,
-    id_I_in2 INT,
-    qtt_i_in2 FLOAT,
-    id_I_in3 INT,
-    qtt_i_in3 FLOAT,
-    id_I_in4 INT,
-    qtt_i_in4 FLOAT,
-    id_I_res1 INT,
-    qtt_i_res1 FLOAT,
-    id_I_res2 INT,
-    qtt_i_res2 FLOAT,
-    type_r INT NOT NULL,
-    FOREIGN KEY (id_MA) REFERENCES machine(id_ma),
-    FOREIGN KEY (id_I_out) REFERENCES item(id_i),
-    FOREIGN KEY (id_I_in1) REFERENCES item(id_i),
-    FOREIGN KEY (id_I_in2) REFERENCES item(id_i),
-    FOREIGN KEY (id_I_in3) REFERENCES item(id_i),
-    FOREIGN KEY (id_I_in4) REFERENCES item(id_i),
-    FOREIGN KEY (id_I_res1) REFERENCES item(id_i),
-    FOREIGN KEY (id_I_res2) REFERENCES item(id_i)
+    name_r TEXT NOT NULL,
+    favorite BOOLEAN DEFAULT FALSE,
+    id_ma_r INTEGER,
+    id_i_S INTEGER,
+    qtt_S INTEGER DEFAULT 0,
+    id_i_R1 INTEGER,
+    qtt_R1 INTEGER DEFAULT 0,
+    id_i_R2 INTEGER,
+    qtt_R2 INTEGER DEFAULT 0,
+    id_i_E0 INTEGER,
+    qtt_E0 INTEGER DEFAULT 0,
+    id_i_E1 INTEGER,
+    qtt_E1 INTEGER DEFAULT 0,
+    id_i_E2 INTEGER,
+    qtt_E2 INTEGER DEFAULT 0,
+    id_i_E3 INTEGER,
+    qtt_E3 INTEGER DEFAULT 0,
+    id_i_E4 INTEGER,
+    qtt_E4 INTEGER DEFAULT 0,
+    FOREIGN KEY (id_ma_r) REFERENCES machine(id_ma),
+    FOREIGN KEY (id_i_S) REFERENCES item(id_i),
+    FOREIGN KEY (id_i_R1) REFERENCES item(id_i),
+    FOREIGN KEY (id_i_R2) REFERENCES item(id_i),
+    FOREIGN KEY (id_i_E0) REFERENCES item(id_i),
+    FOREIGN KEY (id_i_E1) REFERENCES item(id_i),
+    FOREIGN KEY (id_i_E2) REFERENCES item(id_i),
+    FOREIGN KEY (id_i_E3) REFERENCES item(id_i),
+    FOREIGN KEY (id_i_E4) REFERENCES item(id_i)
 );
 
---- Create production table
----- All production setups created by users to produce items
----- id_p       : unique identifier for each production setup | PRIMARY KEY
----- name_p     : Name of the production setup
----- id_r       : recipe used in the production setup         | FOREIGN KEY
----- boost      : boost provided to the machine to respect the demand (in %)
----- qtt_p      : quantity produced per minute given by the user
----- slug       : slug used to boost the production (a slug can boost the production for 50% and only 3 of them can be used per machine)
----- qtt_m      : quantity of machines used in the production setup
----- id_N1      : id of the first needed item to produce the item (if any) | FOREIGN KEY
----- id_N2      : id of the second needed item to produce the item (if any) | FOREIGN KEY
----- id_N3      : id of the third needed item to produce the item (if any) | FOREIGN KEY
----- id_N4      : id of the fourth needed item to produce the item (if any) | FOREIGN KEY
-
-CREATE TABLE production (
-    id_p SERIAL PRIMARY KEY,
-    name_p VARCHAR(100) NOT NULL,
-    id_r INT,
-    boost INT DEFAULT 0,
-    slug INT DEFAULT 0,
-    qtt_m FLOAT DEFAULT 0,
-    qtt_p FLOAT DEFAULT 0,
-    id_N1 INT,
-    id_N2 INT,
-    id_N3 INT,
-    id_N4 INT,
-    FOREIGN KEY (id_N1) REFERENCES item(id_i),
-    FOREIGN KEY (id_N2) REFERENCES item(id_i),
-    FOREIGN KEY (id_N3) REFERENCES item(id_i),
-    FOREIGN KEY (id_N4) REFERENCES item(id_i),
-    FOREIGN KEY (id_R) REFERENCES recipe(id_r)
+-- Table machine_use
+-- -- id_mu         : machine_use uniq identifier                               [PK]
+-- -- id_ma_mu      : machine id to identify the machine that will be use       [FK]
+-- -- slug          : number of slug in the machine (0-3)
+-- -- boost         : actual percentage of the machine (0-100+50*slugs)
+-- -- multiplicator : boolean that indicate if the exit is boosted (3x conso of the machine)
+CREATE TABLE machine_use (
+    id_mu SERIAL PRIMARY KEY,
+    id_ma_mu INTEGER,
+    slug INTEGER DEFAULT 0,
+    boost FLOAT DEFAULT 100,
+    multiplicator BOOLEAN DEFAULT FALSE,
+    FOREIGN KEY (id_ma_mu) REFERENCES machine(id_ma)
 );
 
--- Create table mine 
----- All mine that we have and the item they produce 
----- id_mi      : uniq identifier of the mine 
----- name_mi    : Name of the mine 
----- quality    : quality of the mine (0=impure, 1=normal, 2=pure)
----- id_ma      : machine on the mine 
----- id_i       : id of the item extracted
----- boost      : boost used on the mine (in %)
----- slug       : slug used in the mine (0-3)
+-- Table mine 
+-- -- id_mi         : mine uniq identifier      [PK]
+-- -- name_mi       : mine name
+-- -- quality       : quality multiplicator (1=impure, 2=normal, 4=pur)
+-- -- id_u_mi       : machine use for the mine  [FK]
+-- -- id_i_mi       : item extracted            [FK]
 CREATE TABLE mine (
     id_mi SERIAL PRIMARY KEY,
-    name_mi VARCHAR(100) NOT NULL,
-    quality INT NOT NULL,
-    id_MA INT,
-    id_I INT,
-    boost INT,
-    slug INT, 
-    FOREIGN KEY (id_MA) REFERENCES machine(id_ma),
-    FOREIGN KEY (id_I) REFERENCES item(id_i)
-)
+    name_mi TEXT NOT NULL,
+    quality INTEGER DEFAULT 1,
+    id_u_mi INTEGER,
+    id_i_mi INTEGER,
+    FOREIGN KEY (id_u_mi) REFERENCES machine_use(id_mu),
+    FOREIGN KEY (id_i_mi) REFERENCES item(id_i)
+);
+
+-- Table production 
+-- -- id_p          : production uniq identifier                    [PK]
+-- -- name_p        : production name 
+-- -- qtt_i         : quantity of the item produced
+-- -- entry_p       : boolean, say if it's an entry (the start of a production)
+-- -- id_s_p        : get the step attached to this production      [FK]
+CREATE TABLE production (
+    id_p SERIAL PRIMARY KEY,
+    name_p TEXT NOT NULL,
+    qtt_i INTEGER DEFAULT 0,
+    entry_p BOOLEAN DEFAULT FALSE,
+    id_s_p INTEGER
+    -- FOREIGN KEY (id_s_p) REFERENCES step(id_s) -- will be added later
+);
+
+-- Table step
+-- -- id_s          : step uniq identifier                              [PK]
+-- -- name_s        : step name 
+-- -- id_mu_s       : machine used in this step                         [FK]
+-- -- id_p_E0       : production of the entry 0 of the recipe (energy)  [FK]
+-- -- id_p_E1       : production of the entry 1 of the recipe           [FK]
+-- -- id_p_E2       : production of the entry 2 of the recipe           [FK]
+-- -- id_p_E3       : production of the entry 3 of the recipe           [FK]
+-- -- id_p_E4       : production of the entry 4 of the recipe           [FK]
+CREATE TABLE step (
+    id_s SERIAL PRIMARY KEY,
+    name_s TEXT NOT NULL,
+    id_mu_s INTEGER,
+    id_p_E0 INTEGER,
+    id_p_E1 INTEGER,
+    id_p_E2 INTEGER,
+    id_p_E3 INTEGER,
+    id_p_E4 INTEGER,
+    FOREIGN KEY (id_mu_s) REFERENCES machine_use(id_mu)
+    -- FOREIGN KEYs to production will be added later
+);
+
+-- Add foreign key constraints after both tables are created to resolve circular dependency
+ALTER TABLE production
+    ADD CONSTRAINT fk_production_step FOREIGN KEY (id_s_p) REFERENCES step(id_s);
+
+ALTER TABLE step
+    ADD CONSTRAINT fk_step_p_e0 FOREIGN KEY (id_p_E0) REFERENCES production(id_p),
+    ADD CONSTRAINT fk_step_p_e1 FOREIGN KEY (id_p_E1) REFERENCES production(id_p),
+    ADD CONSTRAINT fk_step_p_e2 FOREIGN KEY (id_p_E2) REFERENCES production(id_p),
+    ADD CONSTRAINT fk_step_p_e3 FOREIGN KEY (id_p_E3) REFERENCES production(id_p),
+    ADD CONSTRAINT fk_step_p_e4 FOREIGN KEY (id_p_E4) REFERENCES production(id_p);
