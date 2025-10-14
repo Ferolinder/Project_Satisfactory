@@ -12,7 +12,6 @@
     <ul>
       <li><a href="index.php">Home</a></li>
       <li><a href="mine.php">Mine</a></li>
-      <li><a href="mine_OLD.php">Mine_OLD</a></li>
       <li><a href="energy.php">Energy</a></li>
       <li><a href="currency.php">Currency</a></li>
       <li><a href="carry.php">Carry</a></li>

@@ -13,5 +13,6 @@
 ?>
 
     <p>Energy page to view and edit energy consumption and production</p>
+    <section id="actualData">
   </body>
 </html>

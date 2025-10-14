@@ -1,6 +1,6 @@
 // Classic id places
 
-// -- item table
+// -- item list
 let item_list = document.getElementById("item_list")
 
 // -- mine list
@@ -37,21 +37,30 @@ let addDoneModal    = document.getElementById('add_done');
 let editDoneModal   = document.getElementById('edit_done');
 let deleteDoneModal = document.getElementById('delete_done');
 
+// -- Graph conso 
+let conso_text      = document.getElementById('conso_text');
+let conso_graph     = document.getElementById('conso_graph');
+
 // Set the page to default setting
 
+// -- Clear conso 
+clearConso();
+
 // -- Get mines
-ajaxRequest('GET', 'php/request.php', updateMineList, 
-    'action=get_mine'
-);
 
 // -- Get items 
 ajaxRequest('GET', 'php/request.php', 
     function(data){
         updateItemList(data),
+        setConsoGraph(data);
         addOptionSelect(item_addForm, data);
         addOptionSelect(item_editForm, data);
     },
     'action=get_primary_item'
+);
+
+ajaxRequest('GET', 'php/request.php', updateMineList, 
+    'action=get_mine'
 );
 
 // -- Get machines
@@ -76,6 +85,7 @@ hideModal(errorModal);
 hideModal(addDoneModal);
 hideModal(editDoneModal);
 hideModal(deleteDoneModal);
+
 
 
 
@@ -126,11 +136,12 @@ addMine_button.addEventListener('click', function(event){
         item_addForm.selectedOptions[0].value!="" 
     ){
         ajaxRequest('POST', 'php/request.php', function(data){
-            showModal(addDoneModal, "500");
-            updateMineList(data);
+            clearConso();
             ajaxRequest('GET', 'php/request.php', function(data){
                 updateItemList(data);
             },'action=get_primary_item');
+            updateMineList(data);
+            showModal(addDoneModal, "500");
         }, 
         'action=add_mine' +
             '&name='+       encodeURIComponent(name_addForm.value) +
@@ -157,7 +168,6 @@ closeEdit.addEventListener('click', function(event){
     event.preventDefault();
     hideModal(editModal);
 });
-
 
 // -- Update form by conditions (modal)
 
@@ -205,15 +215,16 @@ editMine_button.addEventListener('click', function(event){
         item_editForm.selectedOptions[0].value!="" 
     ){
         ajaxRequest('PUT', 'php/request.php', function(data){
-            showModal(editDoneModal, "500");
-            updateMineList(data);
-            hideModal(editModal);
+            clearConso();
             ajaxRequest('GET', 'php/request.php', 
                 function(data){
                 updateItemList(data);
             },
-    'action=get_primary_item'
-);
+                'action=get_primary_item'
+            );
+            updateMineList(data);
+            hideModal(editModal);
+            showModal(editDoneModal, "500");
         }, 
         'action=edit_mine' +
             '&id_mi='+     encodeURIComponent(editMine_button.dataset.mineId) +
@@ -279,8 +290,8 @@ function updateBoost(slugValue, boost_n, boost_r, caseType){
 function updateItemList(data){
     item_list.innerHTML="<h2> List of all items </h2>";
     data.forEach(item => {
+        // Add it to the graph 
         let span = document.createElement('span');
-        // console.log(item);
         span.textContent = `${item['name_i']}: ${item['qtt_p']}`;
         span.dataset.id = item['id_i']; // Add the item id to the dataset
         item_list.appendChild(span);
@@ -292,6 +303,8 @@ function updateItemList(data){
 function updateMineList(data){
     mine_list.innerHTML="";
     data.forEach(mine => {
+        // Update consumption graph
+        updateConso(mine);
 
         // Create a container for the mine entry
         let container = document.createElement('div');
@@ -373,11 +386,12 @@ function updateMineList(data){
         deleteButton.addEventListener('click', function(){
             if(confirm("Do you really want to delete this mine ?")){
                 ajaxRequest('DELETE', 'php/request.php',function(data){
-                    showModal(deleteDoneModal, "500");
+                    clearConso();
                     updateMineList(data);
                     ajaxRequest('GET', 'php/request.php', function(data){
                         updateItemList(data);
                     },'action=get_primary_item');
+                    showModal(deleteDoneModal, "500");
                 },
                 'action=delete_mine' + 
                 '&id_mi=' + mine['id_mi'] + 
@@ -391,6 +405,7 @@ function updateMineList(data){
         mine_list.appendChild(container);
         
     });
+    drawGraph();
 }
 
 // -- Adding select options 
@@ -481,4 +496,119 @@ function fillEditModal(mine){
     editMine_button.dataset.previousProd = ((mine['boost']/100)*(30*mine['quality']*mine['natural_boost'])).toFixed(2);
 }
 
+
+// -- Clear conso graph and text
+function clearConso(){
+    conso_text.innerHTML=0;
+    Array.from(conso_graph.children).forEach( item => {
+        item.dataset.conso_tot=0;
+    })
+}
+
+// -- set item in conso graph
+function setConsoGraph(data){
+    console.log("setConsoGraph called");
+    data.forEach(item =>{
+        let div_item = document.createElement("div");
+        div_item.innerHTML          = item['name_i'];
+        div_item.dataset.qtt_p      = item['qtt_p'];
+        div_item.dataset.id_i       = item['id_i'];
+        div_item.dataset.conso_tot  = 0;
+        div_item.hidden=true;
+        conso_graph.appendChild(div_item);
+    })
+}
+
+// -- Update conso graph 
+function updateConso(mine){
+    conso_text.innerHTML = Number(conso_text.innerHTML)+ Number(mine['conso']);
+    // Find the div corresponding to the item produced by this mine
+    let div_item = conso_graph.querySelector(`div[data-id_i="${mine['id_i_mi']}"]`);
+    if (div_item) {
+        // Add this mine's consumption to the total for this item
+        let currentConso = Number(div_item.dataset.cono_tot) || 0;
+        div_item.dataset.conso_tot = currentConso + Number(mine['conso']);
+    }
+}
+
+// -- Drawing the graph 
+function drawGraph() {
+    // Remove any previous SVG
+    let oldSvg = conso_graph.querySelector('svg');
+    if (oldSvg) oldSvg.remove();
+
+    // Gather data from divs
+    let items = Array.from(conso_graph.querySelectorAll('div[data-id_i]'));
+    let total = items.reduce((sum, div) => sum + Number(div.dataset.conso_tot), 0);
+
+    if (total === 0) return; // Nothing to draw
+
+    // SVG setup
+    const size = 200;
+    const radius = size / 2 - 20;
+    const center = size / 2;
+    let svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+    svg.setAttribute("width", size);
+    svg.setAttribute("height", size);
+    svg.style.display = "block";
+    svg.style.margin = "0 auto";
+
+    // Colors for slices
+    const colors = [
+        "#4e79a7", "#f28e2b", "#e15759", "#76b7b2", "#59a14f",
+        "#edc949", "#af7aa1", "#ff9da7", "#9c755f", "#bab0ab"
+    ];
+
+    let startAngle = 0;
+    items.forEach((div, i) => {
+        let value = Number(div.dataset.conso_tot);
+        if (value === 0) return;
+        let angle = (value / total) * 2 * Math.PI;
+        let endAngle = startAngle + angle;
+
+        // Calculate coordinates
+        let x1 = center + radius * Math.cos(startAngle - Math.PI / 2);
+        let y1 = center + radius * Math.sin(startAngle - Math.PI / 2);
+        let x2 = center + radius * Math.cos(endAngle - Math.PI / 2);
+        let y2 = center + radius * Math.sin(endAngle - Math.PI / 2);
+
+        let largeArcFlag = angle > Math.PI ? 1 : 0;
+
+        let pathData = [
+            `M ${center} ${center}`,
+            `L ${x1} ${y1}`,
+            `A ${radius} ${radius} 0 ${largeArcFlag} 1 ${x2} ${y2}`,
+            "Z"
+        ].join(" ");
+
+        let path = document.createElementNS("http://www.w3.org/2000/svg", "path");
+        path.setAttribute("d", pathData);
+        path.setAttribute("fill", colors[i % colors.length]);
+        path.setAttribute("stroke", "#fff");
+        path.setAttribute("stroke-width", "2");
+        path.setAttribute("data-id_i", div.dataset.id_i);
+        path.setAttribute("title", `${div.innerHTML}: ${value}`);
+
+        svg.appendChild(path);
+
+        // Optional: Add label
+        let midAngle = startAngle + angle / 2;
+        let labelX = center + (radius / 1.5) * Math.cos(midAngle - Math.PI / 2);
+        let labelY = center + (radius / 1.5) * Math.sin(midAngle - Math.PI / 2);
+
+        let text = document.createElementNS("http://www.w3.org/2000/svg", "text");
+        text.setAttribute("x", labelX);
+        text.setAttribute("y", labelY);
+        text.setAttribute("text-anchor", "middle");
+        text.setAttribute("dominant-baseline", "middle");
+        text.setAttribute("font-size", "12");
+        text.setAttribute("fill", "#222");
+        text.textContent = div.innerHTML;
+        svg.appendChild(text);
+
+        startAngle = endAngle;
+    });
+
+    conso_graph.appendChild(svg);
+}
 

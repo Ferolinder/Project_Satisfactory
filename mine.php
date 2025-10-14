@@ -70,6 +70,12 @@
         <div id="item_list">
             <!-- item list added using js -->
         </div>
+        <div>
+            <h2> Total consumption</h2>
+            <span class="total">Total consumption = <span id="conso_text"></span>MW</span>
+            <div id="conso_graph">
+            </div>
+        </div>
     </section>
 
     <section id="modal">
