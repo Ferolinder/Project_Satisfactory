@@ -1,3 +1,9 @@
+console.log("mine.js loaded ");
+
+// Import
+import {showModal, hideModal } from './common.js';
+import { ajaxRequest } from './ajax.js';
+
 // Classic id places
 
 // -- item list
@@ -457,21 +463,6 @@ function updateSelect(entry, exit){
     }
 }
 
-// -- Hide modal
-function hideModal(modal){
-    modal.hidden=true;
-}
-
-// -- Show modal
-function showModal(modal, time) {
-    modal.hidden = false;
-    if (time !== Infinity) {
-        setTimeout(() => {
-            modal.hidden = true;
-        }, time);
-    }
-}
-
 // -- Fill editModal
 function fillEditModal(mine){
     console.log(mine);
@@ -496,7 +487,6 @@ function fillEditModal(mine){
     editMine_button.dataset.previousProd = ((mine['boost']/100)*(30*mine['quality']*mine['natural_boost'])).toFixed(2);
 }
 
-
 // -- Clear conso graph and text
 function clearConso(){
     conso_text.innerHTML=0;
@@ -507,7 +497,7 @@ function clearConso(){
 
 // -- set item in conso graph
 function setConsoGraph(data){
-    console.log("setConsoGraph called");
+
     data.forEach(item =>{
         let div_item = document.createElement("div");
         div_item.innerHTML          = item['name_i'];

@@ -4,9 +4,9 @@
     function customPageHeader(){?>
     <meta name="description" content="Mine page to view and edit mining operations">
     <link rel="stylesheet" href="css/style.css">
-    <script src="js/ajax.js" defer></script>
-    <script src="js/mine.js" defer></script>
-    <script src="js/common.js" defer></script>
+    <script src="./js/ajax.js" type="module" defer></script>
+    <script src="./js/mine.js" type="module" defer></script>
+    <script src="./js/common.js" type="module" defer></script>
     <?php }
 
     include_once('./php/inject/header.php');

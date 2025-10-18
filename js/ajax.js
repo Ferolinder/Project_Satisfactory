@@ -47,3 +47,5 @@ function httpErrors(errorCode){
         console.log(errorCode);
     }
 }
+
+export { ajaxRequest };
